@@ -27,4 +27,4 @@ build/
 
 # local npm link folders
 *.tgz
-test_project
+/test_project
