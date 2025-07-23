@@ -1,8 +1,6 @@
 import { Command } from 'commander';
 import { detectOs } from '../utils/detectOs.js';
-import { promisify } from 'node:util';
-import child_process from 'node:child_process';
-const exec = promisify(child_process.exec);
+import { executeCommand } from '../utils/executeCommand.js';
 
 // List all the ports
 export const listCommand = new Command('list')
@@ -11,13 +9,9 @@ export const listCommand = new Command('list')
   .action(async port => {
     const currentOs = detectOs();
     if (currentOs === 'windows') {
+      const winCommand = `netstat -ano | findstr ${port}`;
       try {
-        const { stdout, stderr } = await exec(
-          `netstat -ano | findstr ${port}`,
-          {
-            shell: 'powershell.exe',
-          }
-        );
+        const { stdout, stderr } = await executeCommand(winCommand, 'cmd.exe');
         if (stdout) {
           console.log('stdout:', stdout);
         }
@@ -28,6 +22,20 @@ export const listCommand = new Command('list')
         console.error(`Error: ${error.message}`);
       }
     } else {
-      console.log(`Run lsof -i | grep ${port}`);
+      const unixCommand = `netstat -tulpn | grep ${port}`;
+      try {
+        const { stdout, stderr } = await executeCommand(
+          unixCommand,
+          '/bin/bash'
+        );
+        if (stdout) {
+          console.log('stdout:', stdout);
+        }
+        if (stderr) {
+          console.error('stderr:', stderr);
+        }
+      } catch (error) {
+        console.error(`Error: ${error.message}`);
+      }
     }
   });
