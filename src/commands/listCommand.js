@@ -4,11 +4,14 @@ import { executeCommand } from '../utils/executeCommand.js';
 import { parseOutput } from '../utils/parseOutput.js';
 import { prettyPrint } from '../utils/prettyPrint.js';
 
+const filterData = (data, portNumber) =>
+  data.filter(line => (portNumber ? line.port === String(portNumber) : true));
+
 // List all the ports
 export const listCommand = new Command('list')
   .description('Shows all port in use')
-  .argument('<port>', 'port to manage')
-  .action(async port => {
+  .option('-p, --port <port>', 'Optional port number')
+  .action(async options => {
     const currentOs = detectOs();
     const headers = ['Protocol', 'Port', 'PID'];
     if (currentOs === 'windows') {
@@ -16,8 +19,9 @@ export const listCommand = new Command('list')
       try {
         const { stdout, stderr } = await executeCommand(winCommand, 'cmd.exe');
         if (stdout) {
-          const processData = parseOutput(stdout, currentOs, port);
-          prettyPrint(headers, processData);
+          const processData = parseOutput(stdout, currentOs);
+          const filteredProcessData = filterData(processData, options.port);
+          prettyPrint(headers, filteredProcessData);
         }
         if (stderr) {
           console.error('stderr:', stderr);
@@ -30,8 +34,9 @@ export const listCommand = new Command('list')
       try {
         const { stdout, stderr } = await executeCommand(unixCommand);
         if (stdout) {
-          const processData = parseOutput(stdout, currentOs, port);
-          prettyPrint(headers, processData);
+          const processData = parseOutput(stdout, currentOs);
+          const filteredProcessData = filterData(processData, options.port);
+          prettyPrint(headers, filteredProcessData);
         }
         if (stderr) {
           console.error('stderr:', stderr);

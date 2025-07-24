@@ -1,4 +1,5 @@
 import Table from 'cli-table3';
+import chalk from 'chalk';
 
 export const prettyPrint = (headers, data) => {
   const table = new Table({
@@ -10,8 +11,15 @@ export const prettyPrint = (headers, data) => {
       border: ['blue'],
     },
   });
-  data.forEach(process =>
-    table.push([process.protocol, process.port, process.pid])
-  );
-  console.log(table.toString());
+  if (data.length === 0) {
+    console.log(
+      chalk.yellowBright('Warning: ') +
+        'No processes found matching your criteria.'
+    );
+  } else {
+    data.forEach(process =>
+      table.push([process.protocol, process.port, process.pid])
+    );
+    console.log(table.toString());
+  }
 };

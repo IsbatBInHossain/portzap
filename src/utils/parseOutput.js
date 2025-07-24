@@ -1,4 +1,4 @@
-export const parseOutput = (data, osName, portNumber) => {
+export const parseOutput = (data, osName) => {
   // Define OS-specific configurations
   const osConfigs = {
     windows: {
@@ -33,9 +33,5 @@ export const parseOutput = (data, osName, portNumber) => {
     return acc;
   }, []);
 
-  const filteredLines = processedLines.filter(line =>
-    portNumber ? line.port === String(portNumber) : True
-  );
-
-  return filteredLines;
+  return processedLines;
 };
