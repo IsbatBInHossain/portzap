@@ -33,8 +33,8 @@ export const parseOutput = (data, osName, portNumber) => {
     return acc;
   }, []);
 
-  const filteredLines = processedLines.filter(
-    line => line.port === String(portNumber)
+  const filteredLines = processedLines.filter(line =>
+    portNumber ? line.port === String(portNumber) : True
   );
 
   return filteredLines;
