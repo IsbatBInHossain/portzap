@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { detectOs } from '../utils/detectOs.js';
 import { executeCommand } from '../utils/executeCommand.js';
+import { parseOutput } from '../utils/parseOutput.js';
 
 // List all the ports
 export const listCommand = new Command('list')
@@ -13,7 +14,7 @@ export const listCommand = new Command('list')
       try {
         const { stdout, stderr } = await executeCommand(winCommand, 'cmd.exe');
         if (stdout) {
-          console.log('stdout:', stdout);
+          parseOutput(stdout, currentOs);
         }
         if (stderr) {
           console.error('stderr:', stderr);
@@ -29,7 +30,7 @@ export const listCommand = new Command('list')
           '/bin/bash'
         );
         if (stdout) {
-          console.log('stdout:', stdout);
+          console.log(stdout);
         }
         if (stderr) {
           console.error('stderr:', stderr);
