@@ -10,11 +10,12 @@ export const listCommand = new Command('list')
   .action(async port => {
     const currentOs = detectOs();
     if (currentOs === 'windows') {
-      const winCommand = `netstat -ano | findstr ${port}`;
+      const winCommand = `netstat -ano`;
       try {
         const { stdout, stderr } = await executeCommand(winCommand, 'cmd.exe');
         if (stdout) {
-          parseOutput(stdout, currentOs);
+          const processData = parseOutput(stdout, currentOs, port);
+          console.log(processData);
         }
         if (stderr) {
           console.error('stderr:', stderr);
@@ -23,7 +24,7 @@ export const listCommand = new Command('list')
         console.error(`Error: ${error.message}`);
       }
     } else {
-      const unixCommand = `netstat -tulpn | grep ${port}`;
+      const unixCommand = `lsof -i`;
       try {
         const { stdout, stderr } = await executeCommand(
           unixCommand,
