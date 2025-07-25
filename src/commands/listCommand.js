@@ -3,6 +3,7 @@ import { detectOs } from '../utils/detectOs.js';
 import { executeCommand } from '../utils/executeCommand.js';
 import { parseOutput } from '../utils/parseOutput.js';
 import { prettyPrint } from '../utils/prettyPrint.js';
+import chalk from 'chalk';
 
 const filterData = (data, portNumber) =>
   data.filter(line => (portNumber ? line.port === String(portNumber) : true));
@@ -37,6 +38,6 @@ export const listCommand = new Command('list')
         console.error('stderr:', stderr);
       }
     } catch (error) {
-      console.error(`Error: ${error.message}`);
+      console.error(`${chalk.redBright('Error:')} ${error.message}`);
     }
   });
