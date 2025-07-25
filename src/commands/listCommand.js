@@ -1,42 +1,40 @@
 import { Command } from 'commander';
 import { detectOs } from '../utils/detectOs.js';
 import { executeCommand } from '../utils/executeCommand.js';
-import { parseOutput } from '../utils/parseOutput.js';
+import { parseOutput, filterData } from '../utils/parseOutput.js';
+import { prettyPrint } from '../utils/prettyPrint.js';
+import chalk from 'chalk';
 
 // List all the ports
 export const listCommand = new Command('list')
   .description('Shows all port in use')
-  .argument('<port>', 'port to manage')
-  .action(async port => {
+  .option('-p, --port <port>', 'Optional port number')
+  .action(async options => {
+    const headers = ['Protocol', 'Port', 'PID'];
     const currentOs = detectOs();
+    let command;
+    let shell;
+
     if (currentOs === 'windows') {
-      const winCommand = `netstat -ano | findstr ${port}`;
-      try {
-        const { stdout, stderr } = await executeCommand(winCommand, 'cmd.exe');
-        if (stdout) {
-          parseOutput(stdout, currentOs);
-        }
-        if (stderr) {
-          console.error('stderr:', stderr);
-        }
-      } catch (error) {
-        console.error(`Error: ${error.message}`);
-      }
+      command = 'netstat -ano';
+      shell = process.env.comspec;
     } else {
-      const unixCommand = `netstat -tulpn | grep ${port}`;
-      try {
-        const { stdout, stderr } = await executeCommand(
-          unixCommand,
-          '/bin/bash'
-        );
-        if (stdout) {
-          console.log(stdout);
-        }
-        if (stderr) {
-          console.error('stderr:', stderr);
-        }
-      } catch (error) {
-        console.error(`Error: ${error.message}`);
+      command = 'lsof -i';
+      shell = process.env.shell;
+    }
+
+    try {
+      const { stdout, stderr } = await executeCommand(command, shell);
+      if (stdout) {
+        const allProcessData = parseOutput(stdout, currentOs);
+        const filteredProcessData = filterData(allProcessData, options.port);
+        filteredProcessData.sort((a, b) => Number(a.port) - Number(b.port));
+        prettyPrint(headers, filteredProcessData);
       }
+      if (stderr) {
+        console.error('stderr:', stderr);
+      }
+    } catch (error) {
+      console.error(`${chalk.redBright('Error:')} ${error.message}`);
     }
   });

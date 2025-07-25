@@ -20,6 +20,9 @@
   },
   "homepage": "https://github.com/IsbatBInHossain/portzap#readme",
   "dependencies": {
+    "@inquirer/confirm": "^5.1.14",
+    "chalk": "^5.4.1",
+    "cli-table3": "^0.6.5",
     "commander": "^14.0.0"
   },
   "devDependencies": {
