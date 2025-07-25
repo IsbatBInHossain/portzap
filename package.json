@@ -1,11 +1,14 @@
 {
   "name": "portzap",
-  "version": "1.0.0",
+  "version": "0.0.1-alpha",
   "description": "A CLI tool for managing and killing processes on specific ports",
   "main": "index.js",
   "bin": "./bin/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint . --ext js",
+    "lint:fix": "eslint . --ext js --fix",
+    "format": "prettier --write .",
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
@@ -26,6 +29,7 @@
     "commander": "^14.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.31.0",
     "eslint": "^9.31.0",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
