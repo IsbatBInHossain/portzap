@@ -11,7 +11,7 @@ export const zapCommand = new Command('zap')
   .argument('<port>', 'port to manage')
   .option('--force', 'Skips confirmation before termination')
   .option('--dry-run', 'Previews processes before termination')
-  .hook('preAction', thisCommand => {
+  .hook('preAction', (thisCommand) => {
     const opts = thisCommand.opts();
     if (opts.force && opts.dryRun) {
       console.error(
@@ -24,18 +24,22 @@ export const zapCommand = new Command('zap')
     const osConfigs = {
       windows: {
         list: 'netstat -ano',
-        kill: pid => `taskkill /PID ${pid} /F`,
+        kill: (pid) => `taskkill /PID ${pid} /F`,
         shell: process.env.compspec,
       },
-      default: {
+      unix: {
         list: 'lsof -i',
-        kill: pid => `kill -9 ${pid}`,
+        kill: (pid) => `kill -9 ${pid}`,
         shell: process.env.shell,
       },
     };
     const currentOs = detectOs();
-    const config =
-      currentOs === 'windows' ? osConfigs.windows : osConfigs.default;
+    let config;
+    if (currentOs === 'windows') {
+      config = osConfigs.windows;
+    } else if (osConfigs === 'unix') {
+      config = osConfigs.unix;
+    }
 
     try {
       const { stdout, stderr } = await executeCommand(

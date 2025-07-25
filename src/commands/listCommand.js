@@ -9,7 +9,7 @@ import chalk from 'chalk';
 export const listCommand = new Command('list')
   .description('Shows all port in use')
   .option('-p, --port <port>', 'Optional port number')
-  .action(async options => {
+  .action(async (options) => {
     const headers = ['Protocol', 'Port', 'PID'];
     const currentOs = detectOs();
     let command;
@@ -18,7 +18,7 @@ export const listCommand = new Command('list')
     if (currentOs === 'windows') {
       command = 'netstat -ano';
       shell = process.env.comspec;
-    } else {
+    } else if (currentOs === 'unix') {
       command = 'lsof -i';
       shell = process.env.shell;
     }
@@ -28,7 +28,6 @@ export const listCommand = new Command('list')
       if (stdout) {
         const allProcessData = parseOutput(stdout, currentOs);
         const filteredProcessData = filterData(allProcessData, options.port);
-        filteredProcessData.sort((a, b) => Number(a.port) - Number(b.port));
         prettyPrint(headers, filteredProcessData);
       }
       if (stderr) {
