@@ -15,7 +15,7 @@ export const zapCommand = new Command('zap')
     const opts = thisCommand.opts();
     if (opts.force && opts.dryRun) {
       console.error(
-        chalk.redBright("Error: Cannot use '--dry-run' and '--force' together.")
+        `${chalk.redBright('Error:')} Cannot use '--dry-run' and '--force' together.`
       );
       process.exit(1);
     }
@@ -23,28 +23,33 @@ export const zapCommand = new Command('zap')
   .action(async (port, options) => {
     const osConfigs = {
       windows: {
-        list: 'netstat -ano',
-        kill: (pid) => `taskkill /PID ${pid} /F`,
-        shell: process.env.compspec,
+        listCmd: {
+          command: 'netstat',
+          args: ['-ano'],
+        },
+        killCmd: (pid) => ({
+          command: 'taskkill',
+          args: ['/PID', pid, '/F'],
+        }),
       },
       unix: {
-        list: 'lsof -i',
-        kill: (pid) => `kill -9 ${pid}`,
-        shell: process.env.shell,
+        listCmd: {
+          command: 'lsof',
+          args: ['-i'],
+        },
+        killCmd: (pid) => ({
+          command: 'kill',
+          args: ['-9', pid],
+        }),
       },
     };
     const currentOs = detectOs();
-    let config;
-    if (currentOs === 'windows') {
-      config = osConfigs.windows;
-    } else if (osConfigs === 'unix') {
-      config = osConfigs.unix;
-    }
+    const config = osConfigs[currentOs];
 
     try {
       const { stdout, stderr } = await executeCommand(
-        config.list,
-        config.shell
+        config.listCmd.command,
+        config.listCmd.args
       );
       if (stdout) {
         const allProcessData = parseOutput(stdout, currentOs);
@@ -63,14 +68,16 @@ export const zapCommand = new Command('zap')
         } else {
           const pid = filteredProcessData[0].pid;
           if (options.dryRun) {
+            const { command, args } = config.killCmd(pid);
             console.warn(
-              `${chalk.redBright('DRY RUN:')} Would execute ${config.kill(
-                pid
+              `${chalk.redBright('DRY RUN:')} Would execute ${command} ${args.join(
+                ' '
               )} to stop process on port ${port}.`
             );
             return;
           } else if (options.force) {
-            await executeCommand(config.kill(pid), config.shell);
+            const { command, args } = config.killCmd(pid);
+            await executeCommand(command, args);
             console.log(
               `${chalk.greenBright(
                 `Successfully stopped the process at port ${port}`
@@ -83,7 +90,8 @@ export const zapCommand = new Command('zap')
               )} Are you sure to stop the process in port: ${port}`,
             });
             if (ans) {
-              await executeCommand(config.kill(pid), config.shell);
+              const { command, args } = config.killCmd(pid);
+              await executeCommand(command, args);
               console.log(
                 `${chalk.greenBright(
                   `Successfully stopped the process at port ${port}`

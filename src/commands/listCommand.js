@@ -10,21 +10,23 @@ export const listCommand = new Command('list')
   .description('Shows all port in use')
   .option('-p, --port <port>', 'Optional port number')
   .action(async (options) => {
-    const headers = ['Protocol', 'Port', 'PID'];
     const currentOs = detectOs();
+    const headers = ['Protocol', 'Port', 'PID'];
+
+    // Define OS-specific command and args
     let command;
-    let shell;
+    let args;
 
     if (currentOs === 'windows') {
-      command = 'netstat -ano';
-      shell = process.env.comspec;
+      command = 'netstat';
+      args = ['-ano'];
     } else if (currentOs === 'unix') {
-      command = 'lsof -i';
-      shell = process.env.shell;
+      command = 'lsof';
+      args = ['-i'];
     }
 
     try {
-      const { stdout, stderr } = await executeCommand(command, shell);
+      const { stdout, stderr } = await executeCommand(command, args);
       if (stdout) {
         const allProcessData = parseOutput(stdout, currentOs);
         const filteredProcessData = filterData(allProcessData, options.port);
