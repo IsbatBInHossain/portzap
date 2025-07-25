@@ -30,6 +30,7 @@ export const listCommand = new Command('list')
       if (stdout) {
         const allProcessData = parseOutput(stdout, currentOs);
         const filteredProcessData = filterData(allProcessData, options.port);
+        filteredProcessData.sort((a, b) => Number(a.port) - Number(b.port));
         prettyPrint(headers, filteredProcessData);
       }
       if (stderr) {
