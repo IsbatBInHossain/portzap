@@ -35,3 +35,6 @@ export const parseOutput = (data, osName) => {
 
   return processedLines;
 };
+
+export const filterData = (data, portNumber) =>
+  data.filter(line => (portNumber ? line.port === String(portNumber) : true));
