@@ -12,37 +12,30 @@ export const listCommand = new Command('list')
   .description('Shows all port in use')
   .option('-p, --port <port>', 'Optional port number')
   .action(async options => {
-    const currentOs = detectOs();
     const headers = ['Protocol', 'Port', 'PID'];
+    const currentOs = detectOs();
+    let command;
+    let shell;
+
     if (currentOs === 'windows') {
-      const winCommand = `netstat -ano`;
-      try {
-        const { stdout, stderr } = await executeCommand(winCommand, 'cmd.exe');
-        if (stdout) {
-          const processData = parseOutput(stdout, currentOs);
-          const filteredProcessData = filterData(processData, options.port);
-          prettyPrint(headers, filteredProcessData);
-        }
-        if (stderr) {
-          console.error('stderr:', stderr);
-        }
-      } catch (error) {
-        console.error(`Error: ${error.message}`);
-      }
+      command = 'netstat -ano';
+      shell = process.env.comspec;
     } else {
-      const unixCommand = 'lsof -i';
-      try {
-        const { stdout, stderr } = await executeCommand(unixCommand);
-        if (stdout) {
-          const processData = parseOutput(stdout, currentOs);
-          const filteredProcessData = filterData(processData, options.port);
-          prettyPrint(headers, filteredProcessData);
-        }
-        if (stderr) {
-          console.error('stderr:', stderr);
-        }
-      } catch (error) {
-        console.error(`Error: ${error.message}, ${error.stack}`);
+      command = 'lsof -i';
+      shell = process.env.shell;
+    }
+
+    try {
+      const { stdout, stderr } = await executeCommand(command, shell);
+      if (stdout) {
+        const allProcessData = parseOutput(stdout, currentOs);
+        const filteredProcessData = filterData(allProcessData, options.port);
+        prettyPrint(headers, filteredProcessData);
       }
+      if (stderr) {
+        console.error('stderr:', stderr);
+      }
+    } catch (error) {
+      console.error(`Error: ${error.message}`);
     }
   });
